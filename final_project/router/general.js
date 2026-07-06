@@ -12,9 +12,9 @@ public_users.post("/register", (req,res) => {
  if (username && password) {
    if (isValid(username)) {
      users.push({"username": username, "password": password});
-     return res.status(200).json({message: "User successfully registered. Now you can login"});
+     return res.status(200).json({message:"User successfully registered. Now you can login"});
    } else {
-     return res.status(409).json({message: "User already exists!"}); // Cambiato in 409 (Conflict), più adatto di 404
+     return res.status(409).json({message:"User already exists!"}); // Cambiato in 409 (Conflict), più adatto di 404
    }
  }
  return res.status(400).json({message: "Unable to register user. Missing username or password."}); // Cambiato in 400 (Bad Request)
@@ -45,7 +45,7 @@ public_users.get('/', (req, res) => {
     })
   });
 
-
+/*
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   let isbn = req.params.isbn;
@@ -58,7 +58,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
 
  // async prima della funzione (req, res) => {...}
  //
-
+*/
  public_users.get('/isbn/:isbn', async (req, res) => {
   const fetchBookByIsbn = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -72,7 +72,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
   try {
     // Aspetto che la promessa si risolva e salvo il valore
     const book = await fetchBookByIsbn; 
-    return res.status(200).json(book);
+    return res.status(200).send(JSON.stringify(book, null, 4));
   } catch (error) {
     // Gestisco il fallimento
     return res.status(404).json({ message: error });
@@ -176,7 +176,6 @@ public_users.get('/title/:title', async (req, res) => {
       }
     }, 1000); // ritardo simulato di 1 s. 
     });
-
     try {
       // Aspetto che la promessa si risolva e salvo il valore
       const booksData = await fetchBooksByTitle;
