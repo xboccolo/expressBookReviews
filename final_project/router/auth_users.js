@@ -7,12 +7,9 @@ let users = []
 
 // Check if a user with the given username already exists
 const isValid = (username) => {
-    // Filter the users array for any user with the same username
     let userswithsamename = users.filter((user) => {
         return user.username === username;
     });
-    // Return FALSE if any user with the same username is found (IT'S NOT VALID), 
-    // otherwise TRUE (IT IS VALID).
     if (userswithsamename.length > 0) {
         return false;
     } else {
@@ -22,11 +19,9 @@ const isValid = (username) => {
 
 // Check if the user with the given username and password exists
 const authenticatedUser = (username, password) => {
-    // Filter the users array for any user with the same username and password
     let validusers = users.filter((user) => {
         return (user.username === username && user.password === password);
     });
-    // Return true if any valid user is found, otherwise false
     if (validusers.length > 0) {
         return true;
     } else {
@@ -38,60 +33,64 @@ const authenticatedUser = (username, password) => {
 regd_users.post("/login", (req,res) => {
   const username = req.body.username;
   const password = req.body.password;
+  
   if (username && password) {
     if (authenticatedUser(username, password)) {
       let accessToken = jwt.sign({data: password}, 'access', {expiresIn: 60});
       req.session.authorization = {accessToken, username}
-      return res.status(200).send(JSON.stringify({message: `User ${username} successfully logged in`}, null, 4));
+      // STANDARD: Messaggio pulito senza stringify
+      return res.status(200).json({ message: "User successfully logged in" });
     } else {
-      return res.status(208).send(JSON.stringify({message: "Invalid Login. Check username and password" }, null, 4));
+      // STANDARD: 401 Unauthorized per credenziali errate (o 208 se richiesto esplicitamente dal test)
+      return res.status(208).json({ message: "Invalid Login. Check username and password" });
     }
   }
-  return res.status(404).send(JSON.stringify({message: "Error logging in" }, null, 4));
+  return res.status(404).json({ message: "Error logging in" });
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
   const reviewText = req.query.review;
-  // Se l'utente non è loggato.
+  
   if (!req.session.authorization) {
-    return res.status(403).send(JSON.stringify({ message: "User not logged in" }, null, 4));
+    return res.status(403).json({ message: "User not logged in" });
   }
   const { username } = req.session.authorization;
-  // se manca il parametro recensione.
+  
   if (!reviewText) {
-    return res.status(400).send(JSON.stringify({message: "Review must be provided"}, null, 4));
+    return res.status(400).json({ message: "Review must be provided" });
   }
-  // se il libro non esiste.
+  
   if (!books[isbn]) {
-    return res.status(404).send(JSON.stringify({message: "Book not found"}, null, 4));
+    return res.status(404).json({ message: "Book not found" });
   }
-  // ora aggiunge o sovrascrive la recensione de determinato utente.
+  
   books[isbn].reviews[username] = reviewText;
-   return res.status(200).send(JSON.stringify({ 
-    message: `Review for ISBN ${isbn} successfully added`,
-    author: username,
-    review: reviewText,
-   }, null, 4));
+  // STANDARD: Stringa esatta richiesta dai test '"message": "Review added/updated successfully"'
+  return res.status(200).json({ message: "Review added/updated successfully" });
 });
 
+// Delete a book review
 regd_users.delete("/auth/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
+  
+  if (!req.session.authorization) {
+    return res.status(403).json({ message: "User not logged in" });
+  }
   const { username } = req.session.authorization;
-  // se il libro non esiste.
+  
   if (!books[isbn]) {
-    return res.status(404).send(JSON.stringify({message: "Book not found"}, null, 4));  
+    return res.status(404).json({ message: "Book not found" });  
   }
-  // se non esiste la recensione.
+  
   if (!books[isbn].reviews[username]) {
-    return res.status(404).send(JSON.stringify({message: "Review not found"}, null, 4));  
+    return res.status(404).json({ message: "Review not found" });  
   }
-  // ora cancella la recensione.
+  
   delete books[isbn].reviews[username];
-  return res.status(200).send(JSON.stringify({
-      message: `Review for ISBN ${isbn} successfully deleted by user ${username}`,
-  }, null, 4));
+  // STANDARD: Stringa esatta richiesta dai test '"message": "Review deleted successfully"'
+  return res.status(200).json({ message: "Review deleted successfully" });
 });
 
 module.exports.authenticated = regd_users;
