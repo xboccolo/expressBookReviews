@@ -12,12 +12,12 @@ public_users.post("/register", (req,res) => {
  if (username && password) {
    if (isValid(username)) {
      users.push({"username": username, "password": password});
-     return res.status(200).json({message:"User successfully registered. Now you can login"});
+     return res.status(200).send(JSON.stringify({message: "User successfully registered. Now you can login"}, null, 4));  
    } else {
-     return res.status(409).json({message:"User already exists!"}); // Cambiato in 409 (Conflict), più adatto di 404
+     return res.status(409).send(JSON.stringify({message: "User already exists!"}, null, 4)); // Cambiato in 409 (Conflict), più adatto di 404  
    }
  }
- return res.status(400).json({message: "Unable to register user. Missing username or password."}); // Cambiato in 400 (Bad Request)
+ return res.status(400).send(JSON.stringify({message: "Unable to register user. Missing username or password."}, null, 4)); // Cambiato in 400 (Bad Request)  
 });
 
 // Get method for showing the book list available in the shop
@@ -192,12 +192,12 @@ public_users.get('/review/:isbn',function (req, res) {
   const book = books[isbn];
   //se il libro non esiste
   if (!book) {
-    return res.status(404).json({message: "Book not found"});
+    return res.status(404).send(JSON.stringify({message: "Book not found"}, null, 4));  
   }
   // se il libro esiste, ma non ha recensioni
   const reviews = Object.keys(book.reviews);
   if (!book.reviews || reviews.length === 0) {
-    return res.status(404).json({message: "Review not found"});
+    return res.status(404).send(JSON.stringify({message: "Review not found"}, null, 4));
   } else {
      return res.status(200).send(JSON.stringify(book.reviews, null, 4));
   }

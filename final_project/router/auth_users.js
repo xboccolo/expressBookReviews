@@ -42,12 +42,12 @@ regd_users.post("/login", (req,res) => {
     if (authenticatedUser(username, password)) {
       let accessToken = jwt.sign({data: password}, 'access', {expiresIn: 60});
       req.session.authorization = {accessToken, username}
-      return res.status(200).send("User successfully logged in");
+      return res.status(200).send(JSON.stringify({message: `User ${username} successfully logged in`}, null, 4));
     } else {
-      return res.status(208).json({ message: "Invalid Login. Check username and password" });
+      return res.status(208).send(JSON.stringify({message: "Invalid Login. Check username and password" }, null, 4));
     }
   }
-  return res.status(404).json({ message: "Error logging in" });
+  return res.status(404).send(JSON.stringify({message: "Error logging in" }, null, 4));
 });
 
 // Add a book review
@@ -56,22 +56,24 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   const reviewText = req.query.review;
   // Se l'utente non è loggato.
   if (!req.session.authorization) {
-    return res.status(403).json({ message: "User not logged in" });
+    return res.status(403).send(JSON.stringify({ message: "User not logged in" }, null, 4));
   }
   const { username } = req.session.authorization;
   // se manca il parametro recensione.
   if (!reviewText) {
-    return res.status(400).json({message: "Review must be provided"});
+    return res.status(400).send(JSON.stringify({message: "Review must be provided"}, null, 4));
   }
   // se il libro non esiste.
   if (!books[isbn]) {
-    return res.status(404).json({message: "Book not found"});
+    return res.status(404).send(JSON.stringify({message: "Book not found"}, null, 4));
   }
   // ora aggiunge o sovrascrive la recensione de determinato utente.
   books[isbn].reviews[username] = reviewText;
-  return res.status(200).json({ 
-    message: `Review for '${books[isbn].title}' successfully added/updated by user ${username}` 
-  });
+   return res.status(200).send(JSON.stringify({ 
+    message: `Review for '${books[isbn].title}' successfully added`,
+    author: username,
+    review: reviewText,
+   }, null, 4));
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
@@ -79,17 +81,17 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
   const { username } = req.session.authorization;
   // se il libro non esiste.
   if (!books[isbn]) {
-    return res.status(404).json({message: "Book not found"});
+    return res.status(404).send(JSON.stringify({message: "Book not found"}, null, 4));  
   }
   // se non esiste la recensione.
   if (!books[isbn].reviews[username]) {
-    return res.status(404).json({message: "Review not found"});
+    return res.status(404).send(JSON.stringify({message: "Review not found"}, null, 4));  
   }
   // ora cancella la recensione.
   delete books[isbn].reviews[username];
-  return res.status(200).json({
+  return res.status(200).send(JSON.stringify({
       message: `Review for '${books[isbn].title}' successfully deleted by user ${username}`
-  });
+  }, null, 4));
 });
 
 module.exports.authenticated = regd_users;
