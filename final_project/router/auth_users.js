@@ -34,7 +34,7 @@ const authenticatedUser = (username, password) => {
     }
 }
 
-//only registered users can login
+// only registered users can login
 regd_users.post("/login", (req,res) => {
   const username = req.body.username;
   const password = req.body.password;
@@ -70,7 +70,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   // ora aggiunge o sovrascrive la recensione de determinato utente.
   books[isbn].reviews[username] = reviewText;
    return res.status(200).send(JSON.stringify({ 
-    message: `Review for '${books[isbn].title}' successfully added`,
+    message: `Review for ISBN ${isbn} successfully added`,
     author: username,
     review: reviewText,
    }, null, 4));
@@ -90,7 +90,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
   // ora cancella la recensione.
   delete books[isbn].reviews[username];
   return res.status(200).send(JSON.stringify({
-      message: `Review for '${books[isbn].title}' successfully deleted by user ${username}`
+      message: `Review for ISBN ${isbn} successfully deleted by user ${username}`,
   }, null, 4));
 });
 
