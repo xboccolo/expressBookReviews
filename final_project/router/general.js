@@ -136,6 +136,7 @@ public_users.get('/author/:author',function (req, res) {
     })
   });
 
+/*
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
   let title = req.params.title;
@@ -153,6 +154,37 @@ public_users.get('/title/:title', function (req, res) {
   } else {
     return res.status(404).json({message: "No books found"});
   }
+});
+*/
+
+public_users.get('/title/:title', async (req, res) => {
+  let title = req.params.title;
+  const fetchBooksByTitle = new Promise((resolve, reject) => {
+    setTimeout( () => {
+      let keys = Object.keys(books);
+      let booksByTitle = [];
+      for (let i=0; i<keys.length; i++) {
+        let isbn = keys[i];
+        if (books[isbn].title && books[isbn].title.toLowerCase().includes(title.toLowerCase())) {
+          booksByTitle.push(books[isbn]);
+        } 
+      }
+      if (booksByTitle.length > 0) {
+        resolve(booksByTitle);
+      } else {
+        reject("No books found");
+      }
+    }, 1000); // ritardo simulato di 1 s. 
+    });
+
+    try {
+      // Aspetto che la promessa si risolva e salvo il valore
+      const booksData = await fetchBooksByTitle;
+      return res.status(200).send(JSON.stringify(booksData, null, 4));
+    } catch (error) {
+      // Gestisco il fallimento
+      return res.status(500).send(error);
+    } 
 });
 
 //  Get book review using ISBN as a parameter
