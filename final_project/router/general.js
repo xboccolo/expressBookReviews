@@ -3,6 +3,8 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require('axios');
+
 
 public_users.post("/register", (req,res) => {
  let username = req.body.username;
@@ -20,8 +22,29 @@ public_users.post("/register", (req,res) => {
 
 // Get method for showing the book list available in the shop
 public_users.get('/', (req, res) => {
-  res.send(JSON.stringify(books, null, 4));
-});
+  //res.send(JSON.stringify(books, null, 4));
+
+  const fetchBooksAsync = new Promise((resolve, reject) => {
+    setTimeout( () => {
+      if (books) {
+        resolve(books);
+      } else {
+        reject("Error fetching books");
+      }
+    }, 1000); // ritardo simulato di 1 s. 
+    });
+
+  fetchBooksAsync
+    .then( (booksData) => {
+      // viene eseguito se viene chiamato resolve.
+      return res.status(200).send(JSON.stringify(booksData, null, 4));
+    })
+    .catch( (error) => {
+      // viene eseguito se viene chiamato reject.
+      return res.status(500).send(error);
+    })
+  });
+
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
@@ -40,7 +63,7 @@ public_users.get('/author/:author',function (req, res) {
   // quindi title, author, etc.
   // let values = Object.values(books) restituisce un array con i valori
   // relativi ai parametri.
-  // let entries = Object.entrie(books) restituisce un array multidimensionale
+  // let entries = Object.entries(books) restituisce un array multidimensionale
   // con parametri e valori associati.
   let keys = Object.keys(books);
   let booksByAuthor = [];
