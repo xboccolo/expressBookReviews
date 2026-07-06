@@ -4,10 +4,18 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-
 public_users.post("/register", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+ let username = req.body.username;
+ let password = req.body.password;
+ if (username && password) {
+   if (isValid(username)) {
+     users.push({"username": username, "password": password});
+     return res.status(200).json({message: "User successfully registered. Now you can login"});
+   } else {
+     return res.status(409).json({message: "User already exists!"}); // Cambiato in 409 (Conflict), più adatto di 404
+   }
+ }
+ return res.status(400).json({message: "Unable to register user. Missing username or password."}); // Cambiato in 400 (Bad Request)
 });
 
 // Get method for showing the book list available in the shop
@@ -28,32 +36,61 @@ public_users.get('/isbn/:isbn',function (req, res) {
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   let author = req.params.author;
-
+  // let keys = Object.keys(books) restituisce un array con i parametri.
+  // quindi title, author, etc.
+  // let values = Object.values(books) restituisce un array con i valori
+  // relativi ai parametri.
+  // let entries = Object.entrie(books) restituisce un array multidimensionale
+  // con parametri e valori associati.
   let keys = Object.keys(books);
   let booksByAuthor = [];
   for (let i=0; i<keys.length; i++) {
-    if (books[isbn].author.toLowerCase() === author.toLowerCase()) {
+    let isbn = keys[i];
+    if (books[isbn].author.toLowerCase().includes(author.toLowerCase())) {
       booksByAuthor.push(books[isbn]);
     }
   }
-
   if (booksByAuthor.length > 0) {
-    return res.status(200).json(booksByAuthor);
+    return res.status(200).send(JSON.stringify(booksByAuthor, null, 4));
+  } else {
+      return res.status(404).json({message: "No books found"});
+    }
+});
+
+// Get all books based on title
+public_users.get('/title/:title', function (req, res) {
+  let title = req.params.title;
+  
+  let keys = Object.keys(books);
+  let booksByTitle = [];
+
+  for (let i=0; i<keys.length; i++) {
+    let isbn = keys[i];
+    if (books[isbn].title && books[isbn].title.toLowerCase().includes(title.toLowerCase())) {
+      booksByTitle.push(books[isbn]);
+    } 
+  } if (booksByTitle.length > 0) {
+    return res.status(200).send(JSON.stringify(booksByTitle, null, 4));
   } else {
     return res.status(404).json({message: "No books found"});
   }
-  });
-
-// Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
 });
 
-//  Get book review
+//  Get book review using ISBN as a parameter
 public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  let isbn = req.params.isbn;
+  const book = books[isbn];
+  //se il libro non esiste
+  if (!book) {
+    return res.status(404).json({message: "Book not found"});
+  }
+  // se il libro esiste, ma non ha recensioni
+  const reviews = Object.keys(book.reviews);
+  if (!book.reviews || reviews.length === 0) {
+    return res.status(404).json({message: "Review not found"});
+  } else {
+     return res.status(200).send(JSON.stringify(book.reviews, null, 4));
+  }
 });
 
 module.exports.general = public_users;
