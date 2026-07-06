@@ -78,7 +78,8 @@ public_users.get('/isbn/:isbn',function (req, res) {
     return res.status(404).json({ message: error });
   }
 });
-  
+ 
+/*
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   let author = req.params.author;
@@ -102,9 +103,10 @@ public_users.get('/author/:author',function (req, res) {
       return res.status(404).json({message: "No books found"});
     }
 });
+*/
 
 public_users.get('/author/:author',function (req, res) {
-  author = req.params.author;
+  let author = req.params.author;
   const fetchBooksByAuthor = new Promise((resolve, reject) => {
     setTimeout( () => {
       let keys = Object.keys(books);
