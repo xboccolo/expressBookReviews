@@ -60,13 +60,22 @@ public_users.get('/isbn/:isbn',function (req, res) {
  //
 
  public_users.get('/isbn/:isbn', async (req, res) => {
+  const fetchBookByIsbn = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (books[req.params.isbn]) {
+        resolve(books[req.params.isbn]);
+      } else {
+        reject("Book not found");
+      }
+    }, 1000);
+  });
   try {
     // Aspetto che la promessa si risolva e salvo il valore
     const book = await fetchBookByIsbn; 
-    return res.status(200).json(risultato);
-  } catch (errore) {
+    return res.status(200).json(book);
+  } catch (error) {
     // Gestisco il fallimento
-    return res.status(500).json({ message: errore });
+    return res.status(404).json({ message: error });
   }
 });
   
@@ -93,6 +102,37 @@ public_users.get('/author/:author',function (req, res) {
       return res.status(404).json({message: "No books found"});
     }
 });
+
+public_users.get('/author/:author',function (req, res) {
+  author = req.params.author;
+  const fetchBooksByAuthor = new Promise((resolve, reject) => {
+    setTimeout( () => {
+      let keys = Object.keys(books);
+      let booksByAuthor = [];
+      for (let i=0; i<keys.length; i++) {
+        let isbn = keys[i];
+        if (books[isbn].author.toLowerCase().includes(author.toLowerCase())) {
+          booksByAuthor.push(books[isbn]);
+        }
+      }
+        if (booksByAuthor.length > 0) {
+          resolve(booksByAuthor);
+        } else {
+          reject("No books found");
+        }
+    }, 1000); // ritardo simulato di 1 s. 
+    });
+
+  fetchBooksByAuthor
+    .then( (booksData) => {
+      // viene eseguito se viene chiamato resolve.
+      return res.status(200).send(JSON.stringify(booksData, null, 4));
+    })
+    .catch( (error) => {
+      // viene eseguito se viene chiamato reject.
+      return res.status(500).send(error);
+    })
+  });
 
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
